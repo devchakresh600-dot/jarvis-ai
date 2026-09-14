@@ -1,3 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jarvis AI</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #101010;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 80px;
+    }
+
+    h1 {
+      font-size: 40px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #status {
+      margin-top: 25px;
+      color: #00ffcc;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🤖 JARVIS AI</h1>
+
+  <button onclick="startListening()">🎤 Speak</button>
+
+  <p id="status">Press the button and speak</p>
+
+  <script>
+    function startListening() {
+      const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        document.getElementById("status").innerText =
+          "Speech recognition is not supported.";
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = "en-IN";
+      recognition.start();
+
+      document.getElementById("status").innerText =
+        "🎤 Listening...";
+
+      recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+
+        document.getElementById("status").innerText =
+          "You said: " + text;
+
+        const speech = new SpeechSynthesisUtterance(
+          "You said " + text
+        );
+
+        speech.lang = "en-IN";
+        speechSynthesis.speak(speech);
+      };
+
+      recognition.onerror = function() {
+        document.getElementById("status").innerText =
+          "Microphone permission or speech recognition error.";
+      };
+    }
+  </script>
+
+</body>
+</html>
