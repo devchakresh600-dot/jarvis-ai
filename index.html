@@ -42,9 +42,14 @@
 
   <p id="status">Press the button and speak</p>
 
-  <script src="https://js.puter.com/v2/"></script>
-
 <script>
+function speak(text) {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-IN";
+    speechSynthesis.cancel();
+    speechSynthesis.speak(speech);
+}
+
 function startListening() {
     const SpeechRecognition =
         window.SpeechRecognition ||
@@ -64,46 +69,72 @@ function startListening() {
     document.getElementById("status").innerText =
         "🎤 Listening...";
 
-    recognition.onresult = async function(event) {
-        const text = event.results[0][0].transcript;
+    recognition.onresult = function(event) {
+        const text =
+            event.results[0][0].transcript.toLowerCase();
 
         document.getElementById("status").innerText =
-            "🤖 Thinking...";
+            "You said: " + text;
 
-        try {
-            const response = await puter.ai.chat(
-                "You are JARVIS, a helpful voice assistant. Answer clearly and briefly.\nUser: " + text,
-                { model: "gpt-5.6-luna" }
-            );
+        let reply = "";
 
-            const reply =
-                response?.message?.content ||
-                response?.text ||
-                String(response);
-
-            document.getElementById("status").innerText =
-                "🤖 " + reply;
-
-            const speech =
-                new SpeechSynthesisUtterance(reply);
-
-            speech.lang = "en-IN";
-            speechSynthesis.speak(speech);
-
-        } catch (error) {
-            document.getElementById("status").innerText =
-                "❌ AI reply failed. Please try again.";
-
-            console.error(error);
+        if (text.includes("hello") || text.includes("hi")) {
+            reply = "Hello! I am JARVIS. How can I help you?";
         }
+        else if (
+            text.includes("your name") ||
+            text.includes("who are you")
+        ) {
+            reply = "I am JARVIS, your voice assistant.";
+        }
+        else if (text.includes("time")) {
+            reply = "The time is " +
+                new Date().toLocaleTimeString("en-IN");
+        }
+        else if (text.includes("date")) {
+            reply = "Today is " +
+                new Date().toLocaleDateString("en-IN");
+        }
+        else if (text.includes("open youtube")) {
+            reply = "Opening YouTube.";
+            window.open("https://www.youtube.com", "_blank");
+        }
+        else if (text.includes("open google")) {
+            reply = "Opening Google.";
+            window.open("https://www.google.com", "_blank");
+        }
+        else if (text.includes("search google")) {
+            const searchText =
+                text.replace("search google", "").trim();
+
+            if (searchText) {
+                reply = "Searching Google for " + searchText;
+                window.open(
+                    "https://www.google.com/search?q=" +
+                    encodeURIComponent(searchText),
+                    "_blank"
+                );
+            } else {
+                reply = "What should I search for?";
+            }
+        }
+        else if (text.includes("thank you")) {
+            reply = "You're welcome.";
+        }
+        else {
+            reply = "I heard you say " + text +
+                ". I am still learning more commands.";
+        }
+
+        document.getElementById("status").innerText =
+            "🤖 " + reply;
+
+        speak(reply);
     };
 
     recognition.onerror = function() {
         document.getElementById("status").innerText =
-            "Microphone permission or speech recognition error.";
+            "❌ Microphone or speech recognition error.";
     };
 }
 </script>
-
-</body>
-</html>
