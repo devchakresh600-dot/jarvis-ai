@@ -42,46 +42,68 @@
 
   <p id="status">Press the button and speak</p>
 
-  <script>
-    function startListening() {
-      const SpeechRecognition =
+  <script src="https://js.puter.com/v2/"></script>
+
+<script>
+function startListening() {
+    const SpeechRecognition =
         window.SpeechRecognition ||
         window.webkitSpeechRecognition;
 
-      if (!SpeechRecognition) {
+    if (!SpeechRecognition) {
         document.getElementById("status").innerText =
-          "Speech recognition is not supported.";
+            "Speech recognition is not supported.";
         return;
-      }
+    }
 
-      const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognition();
 
-      recognition.lang = "en-IN";
-      recognition.start();
+    recognition.lang = "en-IN";
+    recognition.start();
 
-      document.getElementById("status").innerText =
+    document.getElementById("status").innerText =
         "🎤 Listening...";
 
-      recognition.onresult = function(event) {
+    recognition.onresult = async function(event) {
         const text = event.results[0][0].transcript;
 
         document.getElementById("status").innerText =
-          "You said: " + text;
+            "🤖 Thinking...";
 
-        const speech = new SpeechSynthesisUtterance(
-          "You said " + text
-        );
+        try {
+            const response = await puter.ai.chat(
+                "You are JARVIS, a helpful voice assistant. Answer clearly and briefly.\nUser: " + text,
+                { model: "gpt-5.6-luna" }
+            );
 
-        speech.lang = "en-IN";
-        speechSynthesis.speak(speech);
-      };
+            const reply =
+                response?.message?.content ||
+                response?.text ||
+                String(response);
 
-      recognition.onerror = function() {
+            document.getElementById("status").innerText =
+                "🤖 " + reply;
+
+            const speech =
+                new SpeechSynthesisUtterance(reply);
+
+            speech.lang = "en-IN";
+            speechSynthesis.speak(speech);
+
+        } catch (error) {
+            document.getElementById("status").innerText =
+                "❌ AI reply failed. Please try again.";
+
+            console.error(error);
+        }
+    };
+
+    recognition.onerror = function() {
         document.getElementById("status").innerText =
-          "Microphone permission or speech recognition error.";
-      };
-    }
-  </script>
+            "Microphone permission or speech recognition error.";
+    };
+}
+</script>
 
 </body>
 </html>
